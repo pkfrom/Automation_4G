@@ -50,7 +50,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 
 .main{display:grid;grid-template-rows:minmax(0, 1.4fr) minmax(0, 1fr);gap:var(--gap);padding:var(--pad);flex:1;min-height:0;overflow:hidden}
 
-.row1{display:grid;grid-template-columns:0.8fr 1.6fr 1.6fr;gap:var(--gap);min-height:0}
+.row1{display:grid;grid-template-columns:1fr 2fr 1fr;gap:var(--gap);min-height:0}
 
 .grand{background:linear-gradient(180deg, var(--card), rgba(12,19,34,0.4)); border:1px solid rgba(255,255,255,0.03);border-radius:var(--r);padding:clamp(8px,1vw,14px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;gap:clamp(4px,0.6vw,8px)}
 .grand::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(61,245,122,.03),transparent 70%)}
@@ -60,6 +60,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 .g-num .gv{font-family:'JetBrains Mono',monospace;font-size:clamp(22px,2.8vw,40px);font-weight:800;letter-spacing:-1.5px;line-height:1}
 .g-num .gl{font-size:clamp(8px,0.65vw,11px);color:var(--dim);margin-top:2px;font-weight:500}
 .g-rate .gv{background:linear-gradient(135deg,var(--c-online),var(--thyb));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.g-rate-scada .gv{background:linear-gradient(135deg,var(--c-scada),#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .g-sep{width:50%;height:1px;background:var(--borderB)}
 .trend{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:clamp(8px,0.6vw,10px);font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
 .trend.up{background:rgba(61,245,122,.1);color:var(--c-online)}
@@ -240,9 +241,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 <div class="hdr">
   <div class="hdr-left">
     <div class="logo">
-      <svg viewBox="0 0 24 24" style="width:clamp(20px,2.5vw,28px);height:auto;filter:drop-shadow(0 0 8px rgba(110,160,255,0.4))">
-        <defs><linearGradient id="lGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6ea0ff" /><stop offset="100%" stop-color="#4a7de0" /></linearGradient></defs>
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="url(#lGrad)" />
+      <svg viewBox="0 0 24 24" style="width:clamp(22px,2.8vw,32px);height:auto;filter:drop-shadow(0 0 8px rgba(0,212,232,0.5))">
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00d4e8" />
+            <stop offset="50%" stop-color="#00bca8" />
+            <stop offset="100%" stop-color="#3df57a" />
+          </linearGradient>
+        </defs>
+        <path d="M5 13 C 5 9, 8 7, 12 7 C 16 7, 19 9, 19 13" fill="none" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M2 13 C 2 7, 6 4, 12 4 C 18 4, 22 7, 22 13" fill="none" stroke="url(#logoGrad)" stroke-width="1.5" stroke-dasharray="2 2" stroke-linecap="round"/>
+        <path d="M4 17h16a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2z" fill="url(#logoGrad)" />
+        <circle cx="7" cy="19.5" r="0.8" fill="#050a14" />
+        <circle cx="12" cy="19.5" r="0.8" fill="#050a14" />
+        <circle cx="17" cy="19.5" r="0.8" fill="#050a14" />
+        <path d="M12 7v7" fill="none" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="14" r="1.5" fill="#ffffff" />
       </svg>
       <span>4G ROUTER</span>
     </div>
@@ -271,34 +285,34 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
     
     <!-- ยอดสรุปภาพรวมทั้งหมด (Grand Summary) -->
     <div class="grand">
-      <div class="grand-label">4G Router Summary</div>
-      <div class="g-num"><div class="gv c-inst" id="g_inst">0</div><div class="gl">แผนการติดตั้งสะสม</div></div>
+      <div class="grand-label">4G Router</div>
+      <div class="g-num"><div class="gv c-inst" id="g_inst">0</div><div class="gl">จำนวนติดตั้งรวม</div></div>
       <div class="g-sep"></div>
       <div class="g-num">
         <div class="gv c-onl"><span id="g_onl">0</span><span id="g_onl_trend"></span></div>
-        <div class="gl">Online NMS รวม</div>
+        <div class="gl">NMS Online รวม</div>
       </div>
       <div class="g-sep"></div>
       <div class="g-num g-rate"><div class="gv" id="g_rate">0.0%</div><div class="gl">อัตรา Online รวม</div></div>
     </div>
 
     <!-- รายละเอียด NMS (4G NMS details) -->
-    <div class="tcard t442">
+    <div class="tcard thyb">
       <div class="tc-top">
-        <div class="ttag tg4"><div class="dot" style="background:var(--t442)"></div>4G NMS Status</div>
+        <div class="ttag tgh"><div class="dot" style="background:var(--thyb)"></div>4G Router Status</div>
         <div class="tc-gauge">
           <svg viewBox="0 0 120 65" style="width:clamp(70px,7vw,110px);height:auto">
             <path d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7" stroke-linecap="round"/>
-            <path id="svg_442" d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="url(#g442)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" style="transition:stroke-dashoffset 1s ease"/>
-            <defs><linearGradient id="g442" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a7de0"/><stop offset="100%" stop-color="var(--c-online)"/></linearGradient></defs>
-            <text id="g4_rate_txt" x="60" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="800" fill="var(--c-online)">0%</text>
-            <text x="60" y="62" text-anchor="middle" font-family="Outfit" font-size="7" fill="var(--muted)">Online Rate</text>
+            <path id="svg_442" d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="url(#gHyb)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" style="transition:stroke-dashoffset 1s ease"/>
+            <defs><linearGradient id="gHyb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00bca8"/><stop offset="100%" stop-color="var(--c-scada)"/></linearGradient></defs>
+            <text id="g4_rate_txt" x="60" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="800" fill="var(--c-scada)">0%</text>
+            <text x="60" y="62" text-anchor="middle" font-family="Outfit" font-size="7" fill="var(--muted)">SCADA Online</text>
           </svg>
         </div>
       </div>
       <div class="stat-grid g4">
         <div class="sbox">
-          <div class="sl">กล่อง NMS</div>
+          <div class="sl">จำนวนติดตั้งรวม</div>
           <div class="sv c-inst" id="t4_inst">0</div>
           <div class="ssub"><div class="sbar"><div class="sfill f-inst" style="width:100%"></div></div></div>
         </div>
@@ -306,62 +320,37 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
           <div class="sl">NMS Online</div>
           <div class="sv c-onl"><span id="t4_onl">0</span><span id="t4_onl_trend"></span></div>
           <div class="ssub"><div class="sbar"><div class="sfill f-onl" id="b4_onl" style="width:0%"></div></div><div class="spct c-onl" id="p4_onl">0%</div></div>
-          <div class="arrow-label" id="lbl4_onl">▲ ยอดติดตั้ง 0</div>
+          <div class="arrow-label" id="lbl4_onl">▲ ยอด NMS 0</div>
         </div>
         <div class="sbox">
-          <div class="sl">NMS Offline</div>
-          <div class="sv c-offline" id="t4_e2e" style="color:var(--c-offline)">0</div>
-          <div class="ssub"><div class="sbar"><div class="sfill f-inst" id="b4_e2e" style="width:0%; background:var(--c-offline)"></div></div><div class="spct c-offline" id="p4_e2e" style="color:var(--c-offline)">0%</div></div>
+          <div class="sl">Commissioning</div>
+          <div class="sv c-e2e" id="t4_e2e" style="color:var(--c-e2e)">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-e2e" id="b4_e2e" style="width:0%"></div></div><div class="spct c-e2e" id="p4_e2e" style="color:var(--c-e2e)">0%</div></div>
           <div class="arrow-label" id="lbl4_e2e">▲ ยอดติดตั้ง 0</div>
         </div>
         <div class="sbox">
-          <div class="sl">กล่อง Online NMS</div>
-          <div class="sv c-sca" id="t4_sca">0%</div>
+          <div class="sl">SCADA ONLINE</div>
+          <div class="sv c-sca" id="t4_sca">0</div>
           <div class="ssub"><div class="sbar"><div class="sfill f-sca" id="b4_sca" style="width:0%"></div></div><div class="spct c-sca" id="p4_sca">0%</div></div>
-          <div class="arrow-label" id="lbl4_sca">▲ เป้าหมาย 100%</div>
+          <div class="arrow-label" id="lbl4_sca">▲ ยอด Commissioning 0</div>
         </div>
       </div>
     </div>
 
-    <!-- รายละเอียด SCADA (SCADA details) -->
-    <div class="tcard thyb">
-      <div class="tc-top">
-        <div class="ttag tgh"><div class="dot" style="background:var(--thyb)"></div>SCADA Connection</div>
-        <div class="tc-gauge">
-          <svg viewBox="0 0 120 65" style="width:clamp(70px,7vw,110px);height:auto" overflow="visible">
-            <path d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7" stroke-linecap="round"/>
-            <path id="svg_hyb" d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="url(#gHyb)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" style="transition:stroke-dashoffset 1s ease"/>
-            <defs><linearGradient id="gHyb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00bca8"/><stop offset="100%" stop-color="var(--c-online)"/></linearGradient></defs>
-            <text id="gh_rate_txt" x="60" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="800" fill="var(--c-online)">0%</text>
-            <text x="60" y="62" text-anchor="middle" font-family="Outfit" font-size="7" fill="var(--muted)">SCADA Online</text>
-          </svg>
-        </div>
+    <!-- ยอดสรุป SCADA (SCADA Summary) -->
+    <div class="grand">
+      <div class="grand-label">SCADA</div>
+      <div class="g-num">
+        <div class="gv c-e2e" id="s_comm">0</div>
+        <div class="gl">Commissioning</div>
       </div>
-      <div class="stat-grid g4">
-        <div class="sbox">
-          <div class="sl">กล่อง SCADA</div>
-          <div class="sv c-inst" id="th_inst">0</div>
-          <div class="ssub"><div class="sbar"><div class="sfill f-inst" style="width:100%"></div></div></div>
-        </div>
-        <div class="sbox">
-          <div class="sl">SCADA Online</div>
-          <div class="sv c-onl"><span id="th_onl">0</span><span id="th_onl_trend"></span></div>
-          <div class="ssub"><div class="sbar"><div class="sfill f-onl" id="bh_onl" style="width:0%"></div></div><div class="spct c-onl" id="ph_onl">0%</div></div>
-          <div class="arrow-label" id="lblh_onl">▲ แผน E2E 0</div>
-        </div>
-        <div class="sbox">
-          <div class="sl">SCADA Failed</div>
-          <div class="sv c-offline" id="th_e2e" style="color:var(--c-offline)">0</div>
-          <div class="ssub"><div class="sbar"><div class="sfill f-inst" id="bh_e2e" style="width:0%; background:var(--c-offline)"></div></div><div class="spct c-offline" id="ph_e2e" style="color:var(--c-offline)">0%</div></div>
-          <div class="arrow-label" id="lblh_e2e">▲ แผน E2E 0</div>
-        </div>
-        <div class="sbox">
-          <div class="sl">SCADA Removed</div>
-          <div class="sv c-e2e" id="th_sca">0</div>
-          <div class="ssub"><div class="sbar"><div class="sfill f-e2e" id="bh_sca" style="width:0%"></div></div><div class="spct c-e2e" id="ph_sca">0%</div></div>
-          <div class="arrow-label" id="lblh_sca">▲ แผน E2E 0</div>
-        </div>
+      <div class="g-sep"></div>
+      <div class="g-num">
+        <div class="gv c-sca"><span id="s_onl">0</span><span id="s_onl_trend"></span></div>
+        <div class="gl">ONLINE</div>
       </div>
+      <div class="g-sep"></div>
+      <div class="g-num g-rate-scada"><div class="gv" id="s_rate">0.0%</div><div class="gl">อัตรา ONLINE</div></div>
     </div>
 
   </div>
@@ -382,14 +371,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
     <div class="cpanel">
       <div class="cp-hdr">
         <div class="cp-t">4G Router — เปรียบเทียบข้อมูลการติดตั้งและออนไลน์</div>
-        <div class="cp-badge" style="background:rgba(110,160,255,0.1);color:var(--t442)">ยอดติดตั้ง / ติดตั้ง NMS / NMS Online / SCADA Online</div>
+        <div class="cp-badge" style="background:rgba(110,160,255,0.1);color:var(--t442)">จำนวนติดตั้งรวม / NMS Online / Commissioning / SCADA ONLINE</div>
       </div>
       <div class="chart-body" id="chart2"></div>
       <div class="legend">
-        <div class="leg-i"><div class="leg-sq" style="background:var(--c-install)"></div>แผนการติดตั้ง</div>
-        <div class="leg-i"><div class="leg-sq" style="background:var(--c-online)"></div>กล่อง NMS</div>
-        <div class="leg-i"><div class="leg-sq" style="background:var(--c-e2e)"></div>NMS Online</div>
-        <div class="leg-i"><div class="leg-sq" style="background:var(--c-scada)"></div>SCADA Online</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-install)"></div>จำนวนติดตั้งรวม</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-online)"></div>NMS Online</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-e2e)"></div>Commissioning</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-scada)"></div>SCADA ONLINE</div>
       </div>
     </div>
   </div>
@@ -493,63 +482,47 @@ function renderDashboard(data) {
   
   const rate_all = Number(conf.rate_all) || 0;
   const rate_442 = Number(conf.rate_442) || 0; // NMS Online Rate
-  const rate_hyb = Number(conf.rate_hyb) || 0; // SCADA Online Rate
+  const rate_hyb = Number(conf.rate_hyb) || 0; // SCADA Online Rate (unused fallback)
+  const rate_scada_val = t_scada_total > 0 ? (t_scada_on / t_scada_total * 100) : 0; // Robust SCADA Online Rate
 
   // 1. ยอดรวมภาพรวม (Grand Summary)
-  document.getElementById('g_inst').innerText = numF(t_plan); // ยอดติดตั้ง
-  document.getElementById('g_onl').innerText = numF(t_nms_on); // Online NMS
+  document.getElementById('g_inst').innerText = numF(conf.plan_installed !== undefined ? conf.plan_installed : t_plan); // ยอดติดตั้งรวม
+  document.getElementById('g_onl').innerText = numF(conf.nms_online !== undefined ? conf.nms_online : t_nms_on); // NMS Online รวม
   document.getElementById('g_onl_trend').innerHTML = getTrend(conf.trend_online_all);
   document.getElementById('g_rate').innerText = rate_all.toFixed(1) + '%';
   
   // 2. รายละเอียด 4G NMS (Left Details)
-  document.getElementById('svg_442').style.strokeDashoffset = 150.8 * (1 - (rate_442/100));
-  document.getElementById('g4_rate_txt').innerHTML = rate_442.toFixed(1) + '%';
-  document.getElementById('t4_inst').innerText = numF(t_nms_total);
+  document.getElementById('svg_442').style.strokeDashoffset = 150.8 * (1 - (rate_scada_val/100));
+  document.getElementById('g4_rate_txt').innerHTML = rate_scada_val.toFixed(1) + '%';
+  
+  // การ์ดซ้ายบน: จำนวนติดตั้งรวม
+  document.getElementById('t4_inst').innerText = numF(conf.plan_installed !== undefined ? conf.plan_installed : t_plan);
+  
+  // การ์ดขวาบน: NMS Online
   document.getElementById('t4_onl').innerText = numF(t_nms_on);
   document.getElementById('t4_onl_trend').innerHTML = getTrend(conf.trend_online_442);
   document.getElementById('b4_onl').style.width = rate_442 + '%';
   document.getElementById('p4_onl').innerText = rate_442.toFixed(1) + '%';
-  document.getElementById('lbl4_onl').innerText = `▲ ยอดติดตั้ง ${numF(t_nms_total)}`;
+  document.getElementById('lbl4_onl').innerText = `▲ ยอด NMS ${numF(t_nms_total)}`;
   
-  const nms_offline = Math.max(0, t_nms_total - t_nms_on);
-  document.getElementById('t4_e2e').innerText = numF(nms_offline);
-  let p4_e2e = t_nms_total ? (nms_offline / t_nms_total * 100).toFixed(1) : 0;
+  // การ์ดซ้ายล่าง: Commissioning (ดึงจากยอด SCADA Total)
+  document.getElementById('t4_e2e').innerText = numF(t_scada_total);
+  let p4_e2e = t_plan ? (t_scada_total / t_plan * 100).toFixed(1) : 0;
   document.getElementById('b4_e2e').style.width = p4_e2e + '%';
   document.getElementById('p4_e2e').innerText = p4_e2e + '%';
-  document.getElementById('lbl4_e2e').innerText = `▲ ยอดติดตั้ง ${numF(t_nms_total)}`;
+  document.getElementById('lbl4_e2e').innerText = `▲ แผนติดตั้ง ${numF(t_plan)}`;
   
-  document.getElementById('t4_sca').innerText = rate_442.toFixed(1) + '%';
-  document.getElementById('b4_sca').style.width = rate_442 + '%';
-  document.getElementById('p4_sca').innerText = rate_442.toFixed(1) + '%';
-  document.getElementById('lbl4_sca').innerText = `▲ เป้าหมาย 100%`;
-
-  // 3. รายละเอียด SCADA E2E (Right Details)
-  document.getElementById('svg_hyb').style.strokeDashoffset = 150.8 * (1 - (rate_hyb/100));
-  document.getElementById('gh_rate_txt').innerHTML = rate_hyb.toFixed(1) + '%';
+  // การ์ดขวาล่าง: SCADA ONLINE
+  document.getElementById('t4_sca').innerText = numF(t_scada_on);
+  document.getElementById('b4_sca').style.width = rate_scada_val + '%';
+  document.getElementById('p4_sca').innerText = rate_scada_val.toFixed(1) + '%';
+  document.getElementById('lbl4_sca').innerText = `▲ ยอด Commissioning ${numF(t_scada_total)}`;
   
-  document.getElementById('th_inst').innerText = numF(t_scada_total);
-  document.getElementById('th_onl').innerText = numF(t_scada_on);
-  document.getElementById('th_onl_trend').innerHTML = getTrend(conf.trend_online_hybrid);
-  let ph_onl = t_scada_total ? (t_scada_on / t_scada_total * 100).toFixed(1) : 0;
-  document.getElementById('bh_onl').style.width = ph_onl + '%';
-  document.getElementById('ph_onl').innerText = ph_onl + '%';
-  document.getElementById('lblh_onl').innerText = `▲ แผน E2E ${numF(t_scada_total)}`;
-
-  // SCADA Failed
-  const scada_failed = off.find(o => o.name.indexOf("Failed") !== -1 || o.name.indexOf("FAILED") !== -1)?.valh || 0;
-  document.getElementById('th_e2e').innerText = numF(scada_failed);
-  let ph_e2e = t_scada_total ? (scada_failed / t_scada_total * 100).toFixed(1) : 0;
-  document.getElementById('bh_e2e').style.width = ph_e2e + '%';
-  document.getElementById('ph_e2e').innerText = ph_e2e + '%';
-  document.getElementById('lblh_e2e').innerText = `▲ แผน E2E ${numF(t_scada_total)}`;
-
-  // SCADA Removed
-  const scada_remove = off.find(o => o.name.indexOf("Remove") !== -1 || o.name.indexOf("REMOVE") !== -1)?.valh || 0;
-  document.getElementById('th_sca').innerText = numF(scada_remove);
-  let ph_sc = t_scada_total ? (scada_remove / t_scada_total * 100).toFixed(1) : 0;
-  document.getElementById('bh_sca').style.width = ph_sc + '%';
-  document.getElementById('ph_sca').innerText = ph_sc + '%';
-  document.getElementById('lblh_sca').innerText = `▲ แผน E2E ${numF(t_scada_total)}`;
+  // 3. ยอดสรุป SCADA (SCADA Summary Card)
+  document.getElementById('s_comm').innerText = numF(t_scada_total);
+  document.getElementById('s_onl').innerText = numF(t_scada_on);
+  document.getElementById('s_onl_trend').innerHTML = getTrend(conf.trend_online_hybrid);
+  document.getElementById('s_rate').innerText = rate_scada_val.toFixed(1) + '%';
 
   // 5. แสดงกราฟสถิติรายเขต
   const sortedByAll = [...D].sort((a,b) => b.o4 - a.o4); // เรียงตามยอด NMS
@@ -557,8 +530,8 @@ function renderDashboard(data) {
   
   const c1 = document.getElementById('chart1'); c1.innerHTML = '';
   const c2 = document.getElementById('chart2'); c2.innerHTML = '';
-  const mx = Math.max(...D.map(d => Math.max(d.i4, d.o4)), 1);
-
+  const mx = Math.max(...D.map(d => Math.max(d.i4, d.e2e, d.ih || 0, d.sc)), 1);
+  
   sortedByAll.forEach(d => {
     const total = d.o4 || 0; // NMS Total
     const online = d.e2e || 0; // NMS Online
@@ -578,14 +551,15 @@ function renderDashboard(data) {
   });
 
   sortedByScada.forEach(d => {
+    const comm_val = d.ih || 0; // Commissioning = 'จำนวน SCADA' (d.ih)
     const r2 = document.createElement('div'); r2.className = 'drow';
     r2.innerHTML = `
       <div class="drow-n">${d.name}</div>
       <div class="drow-bars">
-        <div class="dbar-line" onmouseenter="showTT(event, 'แผนการติดตั้ง', ${d.i4}, 'var(--c-install)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-inst">●</div><div class="dbar-trk"><div class="dbar-fl f-inst" style="width:${mx ? (d.i4/mx*100).toFixed(1) : 0}%"></div></div></div>
-        <div class="dbar-line" onmouseenter="showTT(event, 'กล่อง NMS', ${d.o4}, 'var(--c-online)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-onl">●</div><div class="dbar-trk"><div class="dbar-fl f-onl" style="width:${mx ? (d.o4/mx*100).toFixed(1) : 0}%"></div></div></div>
-        <div class="dbar-line" onmouseenter="showTT(event, 'NMS Online', ${d.e2e}, 'var(--c-e2e)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-e2e">●</div><div class="dbar-trk"><div class="dbar-fl f-e2e" style="width:${mx ? (d.e2e/mx*100).toFixed(1) : 0}%"></div></div></div>
-        <div class="dbar-line" onmouseenter="showTT(event, 'SCADA Online', ${d.sc}, 'var(--c-scada)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-sca">●</div><div class="dbar-trk"><div class="dbar-fl f-sca" style="width:${mx ? (d.sc/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'จำนวนติดตั้งรวม', ${d.i4}, 'var(--c-install)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-inst">●</div><div class="dbar-trk"><div class="dbar-fl f-inst" style="width:${mx ? (d.i4/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'NMS Online', ${d.e2e}, 'var(--c-online)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-onl">●</div><div class="dbar-trk"><div class="dbar-fl f-onl" style="width:${mx ? (d.e2e/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'Commissioning', ${comm_val}, 'var(--c-e2e)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-e2e">●</div><div class="dbar-trk"><div class="dbar-fl f-e2e" style="width:${mx ? (comm_val/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'SCADA ONLINE', ${d.sc}, 'var(--c-scada)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-sca">●</div><div class="dbar-trk"><div class="dbar-fl f-sca" style="width:${mx ? (d.sc/mx*100).toFixed(1) : 0}%"></div></div></div>
       </div>`;
     c2.appendChild(r2);
   });

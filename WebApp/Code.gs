@@ -321,6 +321,7 @@ function getDashboardData() {
     let scada_online = 0;
     let scada_failed = 0;
     let scada_remove = 0;
+    let commissioning = 0;
 
     for (let i = 0; i < summaryValues.length; i++) {
       const row = summaryValues[i];
@@ -331,7 +332,7 @@ function getDashboardData() {
         plan_installed = count;
       } else if (item === "Total") {
         nms_total = count;
-      } else if (item === "Online") {
+      } else if (item === "Online" || item.indexOf("4GOnline") !== -1 || item.indexOf("4G Online") !== -1) {
         nms_online = count;
       } else if (item === "Offline") {
         nms_offline = count;
@@ -343,6 +344,8 @@ function getDashboardData() {
         scada_failed = count;
       } else if (item === "REMOVE") {
         scada_remove = count;
+      } else if (item.indexOf("Commissioning") !== -1 || item === "Commissioning") {
+        commissioning = count;
       }
     }
     
@@ -425,7 +428,12 @@ function getDashboardData() {
     const config = {
       //dashboard_title: "4G Router — Online Dashboard",
       org_name: "MEA | M2M",
-      rate_all: nms_total > 0 ? (nms_online / nms_total * 100) : 0,
+      plan_installed: plan_installed,
+      nms_total: nms_total,
+      nms_online: nms_online,
+      scada_online: scada_online,
+      commissioning: commissioning,
+      rate_all: plan_installed > 0 ? (nms_online / plan_installed * 100) : 0,
       rate_442: nms_total > 0 ? (nms_online / nms_total * 100) : 0,  // NMS Online Rate
       rate_hyb: scada_total > 0 ? (scada_online / scada_total * 100) : 0, // SCADA Online Rate
       trend_online_all: trendNms,
