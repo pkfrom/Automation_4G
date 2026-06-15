@@ -226,38 +226,24 @@ function getDashboardData() {
       Logger.log("Error reading cell C10: " + err.toString());
     }
 
-    for (let i = 0; i < summaryValues.length; i++) {
-      const row = summaryValues[i];
-      if (!row || row.length < 2) continue;
-      
-      const colB = String(row[1] || "").trim();
-      const colC = row[2];
-      const combinedText = (colB + " " + String(colC || "")).toLowerCase();
-      
-      if (combinedText.includes("อัปเดต") || combinedText.includes("อัพเดท") || combinedText.includes("update") || combinedText.includes("ล่าสุด")) {
-        let parsed = null;
-        if (colC instanceof Date) {
-            parsed = {
-              date: Utilities.formatDate(colC, TIMEZONE, "dd/MM/yyyy"),
-              time: Utilities.formatDate(colC, TIMEZONE, "HH:mm")
-            };
-        } else {
-          parsed = parseDateTimeFromString(String(colC || "")) || parseDateTimeFromString(colB);
-        }
-        
-        if (parsed) {
-          if (combinedText.includes("scada")) {
-            sheetScadaUpdated = parsed.date;
-            sheetScadaUpdatedTime = parsed.time;
-          } else if (!combinedText.includes("nms") && !combinedText.includes("4g") && !combinedText.includes("esight")) {
-            // หากไม่ใช่ NMS/4G/eSight ให้ใช้เป็น SCADA อัปเดตถ้ายังไม่มีค่า
-            if (!sheetScadaUpdated) {
-              sheetScadaUpdated = parsed.date;
-              sheetScadaUpdatedTime = parsed.time;
-            }
-          }
-        }
+    // ดึงค่า SCADA Update โดยตรงจากชีต "สรุป" เซลล์ C11
+    try {
+      const cellC11 = summarySheet.getRange("C11").getValue();
+      let parsed = null;
+      if (cellC11 instanceof Date) {
+        parsed = {
+          date: Utilities.formatDate(cellC11, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(cellC11, TIMEZONE, "HH:mm")
+        };
+      } else {
+        parsed = parseDateTimeFromString(String(cellC11 || ""));
       }
+      if (parsed) {
+        sheetScadaUpdated = parsed.date;
+        sheetScadaUpdatedTime = parsed.time;
+      }
+    } catch (err) {
+      Logger.log("Error reading cell C11: " + err.toString());
     }
 
     // โหลดข้อมูลอัปเดตล่าสุดจาก property service
