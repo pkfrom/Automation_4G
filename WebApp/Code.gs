@@ -236,14 +236,38 @@ function getDashboardData() {
       return null;
     }
 
+    function parseDateValue(val) {
+      if (!val) return null;
+      
+      // แปลงข้อมูลตัวเลขแบบ String ให้เป็นชนิดตัวเลข
+      if (typeof val === "string" && !isNaN(val) && val.trim() !== "") {
+        val = parseFloat(val);
+      }
+      
+      if (val instanceof Date) {
+        return val;
+      }
+      
+      if (typeof val === "number") {
+        // แฟกทอรีวันที่ฐานสำหรับ Excel/Google Sheets (30 ธันวาคม 1899)
+        const baseDate = Date.UTC(1899, 11, 30);
+        const msInDay = 24 * 60 * 60 * 1000;
+        const offsetMs = 7 * 60 * 60 * 1000; // ลบ offset 7 ชม. เพื่อหักล้างการจัดกลุ่มเวลาท้องถิ่น
+        return new Date(baseDate + val * msInDay - offsetMs);
+      }
+      
+      return null;
+    }
+
     // ดึงค่า 4G Update โดยค้นหาจากป้ายชื่อ "lastupdated4g" ในชีตสรุป (หรือ Named Range, หรือถอยกลับไป C10)
     try {
       const val4g = getLabelValueHelper(summarySheet, summaryValues, "lastupdated4g", "C10");
+      const dateObj = parseDateValue(val4g);
       let parsed = null;
-      if (val4g instanceof Date) {
+      if (dateObj) {
         parsed = {
-          date: Utilities.formatDate(val4g, TIMEZONE, "dd/MM/yyyy"),
-          time: Utilities.formatDate(val4g, TIMEZONE, "HH:mm")
+          date: Utilities.formatDate(dateObj, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(dateObj, TIMEZONE, "HH:mm")
         };
       } else {
         parsed = parseDateTimeFromString(String(val4g || ""));
@@ -259,11 +283,12 @@ function getDashboardData() {
     // ดึงค่า SCADA Update โดยค้นหาจากป้ายชื่อ "lastupdatedscada" ในชีตสรุป (หรือ Named Range, หรือถอยกลับไป C11)
     try {
       const valScada = getLabelValueHelper(summarySheet, summaryValues, "lastupdatedscada", "C11");
+      const dateObj = parseDateValue(valScada);
       let parsed = null;
-      if (valScada instanceof Date) {
+      if (dateObj) {
         parsed = {
-          date: Utilities.formatDate(valScada, TIMEZONE, "dd/MM/yyyy"),
-          time: Utilities.formatDate(valScada, TIMEZONE, "HH:mm")
+          date: Utilities.formatDate(dateObj, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(dateObj, TIMEZONE, "HH:mm")
         };
       } else {
         parsed = parseDateTimeFromString(String(valScada || ""));
