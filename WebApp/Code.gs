@@ -206,44 +206,74 @@ function getDashboardData() {
       return null;
     }
 
-    // ดึงค่า 4G Update โดยตรงจากชีต "สรุป" เซลล์ C10
+    function getValueByLabel(values, label) {
+      const cleanedLabel = label.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      for (let i = 0; i < values.length; i++) {
+        const row = values[i];
+        if (!row || row.length < 2) continue;
+        const colB = String(row[1] || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        if (colB === cleanedLabel || colB.indexOf(cleanedLabel) !== -1) {
+          return row[2];
+        }
+      }
+      return null;
+    }
+
+    function getLabelValueHelper(summarySheet, summaryValues, label, fallbackCell) {
+      const val = getValueByLabel(summaryValues, label);
+      if (val !== null && val !== "") return val;
+      
+      try {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const namedRange = ss.getRangeByName(label);
+        if (namedRange) return namedRange.getValue();
+      } catch (e) {}
+      
+      try {
+        return summarySheet.getRange(fallbackCell).getValue();
+      } catch (e) {}
+      
+      return null;
+    }
+
+    // ดึงค่า 4G Update โดยค้นหาจากป้ายชื่อ "lastupdated4g" ในชีตสรุป (หรือ Named Range, หรือถอยกลับไป C10)
     try {
-      const cellC10 = summarySheet.getRange("C10").getValue();
+      const val4g = getLabelValueHelper(summarySheet, summaryValues, "lastupdated4g", "C10");
       let parsed = null;
-      if (cellC10 instanceof Date) {
+      if (val4g instanceof Date) {
         parsed = {
-          date: Utilities.formatDate(cellC10, TIMEZONE, "dd/MM/yyyy"),
-          time: Utilities.formatDate(cellC10, TIMEZONE, "HH:mm")
+          date: Utilities.formatDate(val4g, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(val4g, TIMEZONE, "HH:mm")
         };
       } else {
-        parsed = parseDateTimeFromString(String(cellC10 || ""));
+        parsed = parseDateTimeFromString(String(val4g || ""));
       }
       if (parsed) {
         sheetNmsUpdated = parsed.date;
         sheetNmsUpdatedTime = parsed.time;
       }
     } catch (err) {
-      Logger.log("Error reading cell C10: " + err.toString());
+      Logger.log("Error getting 4G update: " + err.toString());
     }
 
-    // ดึงค่า SCADA Update โดยตรงจากชีต "สรุป" เซลล์ C11
+    // ดึงค่า SCADA Update โดยค้นหาจากป้ายชื่อ "lastupdatedscada" ในชีตสรุป (หรือ Named Range, หรือถอยกลับไป C11)
     try {
-      const cellC11 = summarySheet.getRange("C11").getValue();
+      const valScada = getLabelValueHelper(summarySheet, summaryValues, "lastupdatedscada", "C11");
       let parsed = null;
-      if (cellC11 instanceof Date) {
+      if (valScada instanceof Date) {
         parsed = {
-          date: Utilities.formatDate(cellC11, TIMEZONE, "dd/MM/yyyy"),
-          time: Utilities.formatDate(cellC11, TIMEZONE, "HH:mm")
+          date: Utilities.formatDate(valScada, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(valScada, TIMEZONE, "HH:mm")
         };
       } else {
-        parsed = parseDateTimeFromString(String(cellC11 || ""));
+        parsed = parseDateTimeFromString(String(valScada || ""));
       }
       if (parsed) {
         sheetScadaUpdated = parsed.date;
         sheetScadaUpdatedTime = parsed.time;
       }
     } catch (err) {
-      Logger.log("Error reading cell C11: " + err.toString());
+      Logger.log("Error getting SCADA update: " + err.toString());
     }
 
     // โหลดข้อมูลอัปเดตล่าสุดจาก property service
