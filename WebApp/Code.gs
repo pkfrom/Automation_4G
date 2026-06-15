@@ -206,6 +206,26 @@ function getDashboardData() {
       return null;
     }
 
+    // ดึงค่า 4G Update โดยตรงจากชีต "สรุป" เซลล์ C10
+    try {
+      const cellC10 = summarySheet.getRange("C10").getValue();
+      let parsed = null;
+      if (cellC10 instanceof Date) {
+        parsed = {
+          date: Utilities.formatDate(cellC10, TIMEZONE, "dd/MM/yyyy"),
+          time: Utilities.formatDate(cellC10, TIMEZONE, "HH:mm")
+        };
+      } else {
+        parsed = parseDateTimeFromString(String(cellC10 || ""));
+      }
+      if (parsed) {
+        sheetNmsUpdated = parsed.date;
+        sheetNmsUpdatedTime = parsed.time;
+      }
+    } catch (err) {
+      Logger.log("Error reading cell C10: " + err.toString());
+    }
+
     for (let i = 0; i < summaryValues.length; i++) {
       const row = summaryValues[i];
       if (!row || row.length < 2) continue;
@@ -229,14 +249,8 @@ function getDashboardData() {
           if (combinedText.includes("scada")) {
             sheetScadaUpdated = parsed.date;
             sheetScadaUpdatedTime = parsed.time;
-          } else if (combinedText.includes("nms") || combinedText.includes("4g") || combinedText.includes("esight")) {
-            sheetNmsUpdated = parsed.date;
-            sheetNmsUpdatedTime = parsed.time;
-          } else {
-            if (!sheetNmsUpdated) {
-              sheetNmsUpdated = parsed.date;
-              sheetNmsUpdatedTime = parsed.time;
-            }
+          } else if (!combinedText.includes("nms") && !combinedText.includes("4g") && !combinedText.includes("esight")) {
+            // หากไม่ใช่ NMS/4G/eSight ให้ใช้เป็น SCADA อัปเดตถ้ายังไม่มีค่า
             if (!sheetScadaUpdated) {
               sheetScadaUpdated = parsed.date;
               sheetScadaUpdatedTime = parsed.time;
