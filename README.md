@@ -47,6 +47,7 @@ flowchart TD
 - 💾 **Data Export**: บันทึกข้อมูลรายงานอุปกรณ์ในรูปแบบไฟล์ CSV เข้ารหัส UTF-8-sig (รองรับการเปิดใน Excel ภาษาไทยโดยภาษาไม่เพี้ยน)
 - ☁️ **Google Sheets Integration**: อัปโหลดตารางข้อมูลขึ้น Google Sheets โดยตรงผ่าน Google Apps Script (GAS) Web App API
 - 🔄 **Multi-level Fallbacks**: หากระบบส่งออกรายงานหลักล้มเหลว จะพยายามเปลี่ยนไปดาวน์โหลดเป็นไฟล์ Binary หรือดาวน์โหลดผ่าน JSON API มาแปลงเป็น CSV เพื่อลดโอกาสงานหยุดชะงัก
+- ⏰ **Asia/Bangkok Timezone Bound**: ระบบทั้งหมดถูกกำหนดเขตเวลาแบบคงที่เป็น `Asia/Bangkok` (UTC+7) โดยสมบูรณ์ (ทั้งเวลาใน Log ท้องถิ่น, เวลาแจ้งเตือนบน Telegram, และเวลาฝั่ง Google Apps Script Web App)
 
 ---
 
@@ -60,6 +61,10 @@ flowchart TD
 - [nms.py](file:///D:/Playground/Automation_4G/nms.py): สคริปต์หลักสำหรับการดึงข้อมูล NMS และการอัปโหลดข้อมูล
 - [notify.py](file:///D:/Playground/Automation_4G/notify.py): โมดูลฟังก์ชันการส่งข้อความและการรายงานผลทาง Telegram
 - [requirements.txt](file:///D:/Playground/Automation_4G/requirements.txt): ไฟล์ระบุแพ็กเกจภายนอกที่จำเป็นสำหรับ Python
+- [WebApp/](file:///D:/Playground/Automation_4G/WebApp): โฟลเดอร์เก็บไฟล์ซอร์สโค้ดของระบบบริการ Dashboard (Google Apps Script)
+  - [Code.gs](file:///D:/Playground/Automation_4G/WebApp/Code.gs): ไฟล์สคริปต์หลักสำหรับฝั่ง Backend (doGet, doPost, importData)
+  - [Dashboard.html](file:///D:/Playground/Automation_4G/WebApp/Dashboard.html): หน้าเว็บหลักแสดง Dashboard ข้อมูลอุปกรณ์แบบ Responsive
+  - [Index.html](file:///D:/Playground/Automation_4G/WebApp/Index.html): หน้าเว็บหลักสำหรับการอัปโหลดข้อมูล NMS ผ่านเบราว์เซอร์
 
 ---
 
@@ -125,4 +130,7 @@ python nms.py
   - ทำหน้าที่เป็นกระบวนการหลัก โดยสืบทอดเซสชันการเชื่อมต่อในคลาส `NMSClient`
   - ทำการ login, ตรวจหาค่าสถานะ รวมไปถึงการดึงข้อมูล และส่งผ่านข้อมูลไปยัง API ของ Google Apps Script (`upload_to_gas_nms`)
   - มีกลไกดึงข้อมูลสำรองหลายระดับ (Fallback Mechanisms) เพื่อให้แน่ใจว่าจะได้รับรายงานแม้ API หลักจะมีปัญหา
+- **[WebApp/Code.gs](file:///D:/Playground/Automation_4G/WebApp/Code.gs)**:
+  - ทำหน้าที่ประมวลผลคำขอ (Request) จาก Python API (`doPost`) และการโหลดหน้าตาเว็บแอป (`doGet`)
+  - กำหนดเขตเวลาคงที่ `TIMEZONE = "Asia/Bangkok"` สำหรับกระบวนการบันทึกวันเวลาอัปเดต (`last_updated_4g`) ทั้งหมด เพื่อป้องกันการแสดงเวลาผิดพลาดจาก Timezone ของระบบ Google Cloud
 
