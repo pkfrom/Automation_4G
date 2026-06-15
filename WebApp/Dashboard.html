@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4G Router — Online Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050a14;
+  --card:#0c1322;
+  --border:rgba(255,255,255,0.06);
+  --borderB:rgba(255,255,255,0.12);
+  --text:#f0f4ff;
+  --dim:#9aa8c3;
+  --muted:#64748b;
+  --c-install:#7b8db8;
+  --c-installF:linear-gradient(90deg,#5f7199,#7b8db8);
+  --c-online:#3df57a;
+  --c-onlineD:#1ed45e;
+  --c-onlineF:linear-gradient(90deg,#1ed45e,#3df57a);
+  --c-e2e:#ffb940;
+  --c-e2eF:linear-gradient(90deg,#e0a020,#ffb940);
+  --c-scada:#00d4e8;
+  --c-scadaF:linear-gradient(90deg,#00a8c0,#00d4e8);
+  --c-offline:#ff4757;
+  --t442:#6ea0ff;
+  --thyb:#00e8d0;
+  --pad:clamp(10px,1.5vw,20px);
+  --gap:clamp(10px,1vw,14px);
+  --r:clamp(8px,1vw,12px);
+}
+html{background:var(--bg);color:var(--text);font-family:'Outfit','IBM Plex Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;min-height:100dvh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 50% at 8% 12%,rgba(61,245,122,0.04),transparent 70%),radial-gradient(ellipse 40% 45% at 92% 85%,rgba(0,212,232,0.035),transparent 70%),radial-gradient(ellipse 35% 40% at 50% 5%,rgba(110,160,255,0.03),transparent 70%);z-index:0}
+.dash{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad);height:clamp(44px,4vw,52px);flex-shrink:0;background:linear-gradient(180deg,rgba(12,19,34,.97),rgba(12,19,34,.8));border-bottom:1px solid var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50}
+.hdr-left{display:flex;align-items:center;gap:clamp(8px,1vw,14px);min-width:0}
+
+.logo {display:flex;align-items:center;gap:clamp(6px,0.8vw,10px);font-family:'JetBrains Mono',monospace;font-weight:900;font-size:clamp(16px,1.8vw,22px);letter-spacing:1px;flex-shrink:0}
+.logo span {background:linear-gradient(135deg,#ffffff,#8090b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.hdr h1{font-size:clamp(12px,1.2vw,18px);font-weight:700;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr h1 em{font-style:normal;color:var(--muted);font-weight:400;font-size:clamp(9px,0.85vw,12px);margin-left:clamp(6px,0.7vw,10px)}
+.hdr-right{display:flex;align-items:center;gap:clamp(10px,1.3vw,22px);flex-shrink:0}
+
+.clock-t{font-family:'JetBrains Mono',monospace;font-size:clamp(12px,1.3vw,19px);font-weight:700;letter-spacing:1.5px;text-align:right}
+.clock-d{font-size:clamp(8px,0.6vw,10px);color:var(--muted);margin-top:1px;text-align:right}
+
+.main{display:grid;grid-template-rows:minmax(0, 1.4fr) minmax(0, 1fr);gap:var(--gap);padding:var(--pad);flex:1;min-height:0;overflow:hidden}
+
+.row1{display:grid;grid-template-columns:0.8fr 1.6fr 1.6fr;gap:var(--gap);min-height:0}
+
+.grand{background:linear-gradient(180deg, var(--card), rgba(12,19,34,0.4)); border:1px solid rgba(255,255,255,0.03);border-radius:var(--r);padding:clamp(8px,1vw,14px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;gap:clamp(4px,0.6vw,8px)}
+.grand::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(61,245,122,.03),transparent 70%)}
+.grand-label{font-size:clamp(12px, 1vw, 15px);color:#e2e8f0;font-weight:700;letter-spacing:.5px;position:relative;text-align:center;line-height:1.3}
+
+.g-num{position:relative}
+.g-num .gv{font-family:'JetBrains Mono',monospace;font-size:clamp(22px,2.8vw,40px);font-weight:800;letter-spacing:-1.5px;line-height:1}
+.g-num .gl{font-size:clamp(8px,0.65vw,11px);color:var(--dim);margin-top:2px;font-weight:500}
+.g-rate .gv{background:linear-gradient(135deg,var(--c-online),var(--thyb));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.g-sep{width:50%;height:1px;background:var(--borderB)}
+.trend{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:clamp(8px,0.6vw,10px);font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.trend.up{background:rgba(61,245,122,.1);color:var(--c-online)}
+.trend.down{background:rgba(255,107,107,.1);color:#ff6b6b}
+
+.tcard{background:var(--card);border:1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.15); border-radius:var(--r);padding:clamp(10px,1vw,16px);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:clamp(6px,0.8vw,10px)}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.tcard.t442::before{background:linear-gradient(90deg,#4a7de0,var(--t442))}
+.tcard.thyb::before{background:linear-gradient(90deg,#00bca8,var(--thyb))}
+.tc-top{display:flex;align-items:center;justify-content:space-between}
+
+.ttag{display:inline-flex;align-items:center;gap:6px;font-size:clamp(12px,1.1vw,15px);font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.ttag.tg4{color:var(--t442)}.ttag.tgh{color:var(--thyb)}
+.ttag .dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
+
+.tc-gauge{flex-shrink:0}.tc-gauge svg{overflow:visible}
+.stat-grid{display:grid;gap:clamp(6px,0.8vw,10px);flex:1}
+.stat-grid.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+
+.sbox {
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.04);
+  border-radius: clamp(6px,0.6vw,10px);
+  padding: clamp(6px, 0.8vw, 10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; 
+  text-align: center;
+  position: relative;
+  overflow: hidden; 
+}
+.sbox .sl { font-size: clamp(10px, 0.85vw, 12px); font-weight: 600; color: #b0c0e0; letter-spacing: 0.2px; margin-bottom: 2px; white-space: nowrap; }
+.sbox .sv { font-family: 'JetBrains Mono', monospace; font-size: clamp(18px, 2.2vw, 32px); font-weight: 800; letter-spacing: -1px; line-height: 1;}
+.sbox .ssub { display: flex; align-items: center; width: 100%; gap: 6px; margin-top: 4px; }
+.sbox .sbar { flex: 1; height: clamp(3px, 0.3vw, 5px); background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden;}
+.sbox .sfill { height: 100%; border-radius: 3px; transition: width 1s ease;}
+.sbox .spct { font-family: 'JetBrains Mono', monospace; font-size: clamp(9px, 0.75vw, 11px); font-weight: 700;}
+.sbox .arrow-label { font-size: clamp(8px, 0.65vw, 10px); color: var(--dim); margin-top: 2px; white-space: nowrap; }
+
+.offline-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: clamp(4px, 0.5vw, 6px);
+  padding: clamp(4px, 0.5vw, 6px) clamp(6px, 0.8vw, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+}
+.off-head { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  font-size: clamp(10px, 0.8vw, 11px); 
+  font-weight: 600; 
+  color: var(--muted); 
+}
+.off-head-val { 
+  font-family: 'JetBrains Mono', monospace; 
+  font-size: clamp(11px, 1vw, 13px); 
+  font-weight: 700; 
+  color: #ff6b6b; 
+}
+
+.off-breakdown { 
+  display: flex; 
+  flex-direction: column;
+  gap: 4px; 
+}
+
+.off-item { 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  font-size: clamp(9px, 0.7vw, 10.5px); 
+  color: var(--dim); 
+  font-weight: 500;
+  white-space: nowrap;
+}
+.off-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.off-val { 
+  font-family: 'JetBrains Mono', monospace; 
+  font-weight: 600; 
+  color: var(--dim); 
+  margin-left: auto;
+}
+
+.f-inst{background:var(--c-installF)}.f-onl{background:var(--c-onlineF)}.f-e2e{background:var(--c-e2eF)}.f-sca{background:var(--c-scadaF)}
+.c-inst{color:var(--c-install)}.c-onl{color:var(--c-online)}.c-e2e{color:var(--c-e2e)}.c-sca{color:var(--c-scada)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);min-height:0;overflow:hidden}
+.cpanel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:clamp(8px,1vw,12px);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+.cp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(4px,0.6vw,8px);flex-shrink:0;flex-wrap:wrap;gap:4px}
+.cp-t{font-size:clamp(12px,1vw,15px);font-weight:700;letter-spacing:-.2px}
+.cp-badge{font-size:clamp(8px,0.6vw,9px);font-weight:700;padding:3px 8px;border-radius:100px;flex-shrink:0}
+
+.chart-body{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;padding-right:4px}
+.chart-body::-webkit-scrollbar{width:4px}
+.chart-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+.hrow{display:grid;grid-template-columns:clamp(60px,7vw,100px) 1fr clamp(24px,2.5vw,36px);align-items:center;gap:clamp(4px,0.6vw,8px);min-height:clamp(14px,1.6vw,20px);margin-bottom:clamp(2px,0.3vw,4px)}
+.hrow-n{font-family:'IBM Plex Sans Thai',sans-serif;font-size:clamp(10px,0.8vw,12px);font-weight:500;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow-track-wrapper {display:flex;flex-direction:column;flex:1;justify-content:center}
+.hrow-track{height:clamp(5px,0.6vw,10px);background:rgba(255,255,255,.025);border-radius:4px;overflow:hidden;display:flex; cursor:pointer}
+.hrow-seg{height:100%;min-width:0px;transition:width 1s ease}
+.hrow-seg:first-child{border-radius:4px 0 0 4px}.hrow-seg:last-child{border-radius:0 4px 4px 0}
+.hrow-track:hover{filter:brightness(1.2)} 
+.hrow-v{font-family:'JetBrains Mono',monospace;font-size:clamp(10px,0.8vw,13px);font-weight:700;color:var(--text);text-align:right}
+
+.s-o4{background:var(--c-online)} 
+.s-oh{background:var(--c-e2e)} 
+.s-off{background:rgba(255,255,255,0.12)} 
+
+.drow{display:grid;grid-template-columns:clamp(60px,7vw,100px) 1fr;align-items:center;gap:clamp(4px,0.6vw,8px);min-height:clamp(16px,1.8vw,24px);margin-bottom:clamp(2px,0.3vw,4px)}
+.drow-n{font-family:'IBM Plex Sans Thai',sans-serif;font-size:clamp(10px,0.8vw,12px);font-weight:500;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow-bars{display:flex;flex-direction:column;gap:1px}
+.dbar-line{display:flex;align-items:center;gap:clamp(4px,0.5vw,8px);height:clamp(4px,0.5vw,6px);cursor:pointer}
+.dbar-line:hover .dbar-fl {filter:brightness(1.2)}
+.dbar-ic{font-size:clamp(5px,0.4vw,6px);width:clamp(6px,0.6vw,10px);text-align:center;flex-shrink:0}
+.dbar-trk{flex:1;height:clamp(2px,0.3vw,4px);background:rgba(255,255,255,.025);border-radius:4px;overflow:hidden}
+.dbar-fl{height:100%;border-radius:4px;transition:width 1s ease}
+
+.legend{display:flex;gap:clamp(8px,1vw,14px);margin-top:clamp(4px,0.6vw,8px);flex-shrink:0;justify-content:center;flex-wrap:wrap}
+.leg-i{display:flex;align-items:center;gap:4px;font-size:clamp(9px,0.7vw,11px);color:var(--dim)}
+.leg-sq{width:clamp(8px,0.6vw,12px);height:clamp(8px,0.6vw,12px);border-radius:3px;flex-shrink:0}
+
+#loader{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
+.spinner{width:40px;height:40px;border:4px solid rgba(61,245,122,.1);border-top-color:var(--c-online);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.last-upd {display:flex;flex-direction:column;align-items:flex-end;justify-content:center;margin-right:clamp(6px,1vw,14px);padding-right:clamp(6px,1vw,14px);border-right:1px solid var(--borderB); gap:2px}
+.lu-title {font-size:clamp(8px,0.65vw,10px); font-weight:800; color:var(--c-e2e); letter-spacing:1px; margin-bottom:2px; text-transform:uppercase;}
+.lu-row {display:flex; align-items:baseline; gap: 6px;}
+.lu-lbl {font-size:clamp(6.5px,0.55vw,9px);font-weight:700;letter-spacing:.5px}
+.lu-lbl.scada {color: var(--c-scada);}
+.lu-lbl.esight {color: var(--c-online);}
+.lu-val {font-family:'JetBrains Mono',monospace;font-size:clamp(8px,0.75vw,11px);color:var(--dim);}
+
+.tooltip {
+  position: fixed;
+  background: rgba(12, 19, 34, 0.95);
+  border: 1px solid var(--borderB);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none; 
+  opacity: 0;
+  z-index: 9999;
+  transform: translate(-50%, -130%);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+.tooltip.show { opacity: 1; transform: translate(-50%, -120%); }
+.tt-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-left: 6px;}
+
+@media(min-width:1400px){.dash{height:100vh;height:100dvh;overflow:hidden}}
+@media(max-width:1100px){.hdr h1 em{display:none}.row1{grid-template-columns:1fr}}
+@media(max-width:860px){.dash{overflow:auto; height:auto; min-height:100vh}.row1{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.main{overflow:visible}.cpanel{min-height:300px}.stat-grid.g4{grid-template-columns:1fr 1fr}}
+
+@media(max-width:560px){
+  .hdr h1{font-size:11px}.hdr h1 em{display:none}.clock-d{display:none}.cpanel{min-height:260px}.sbox .sv{font-size:18px}.g-num .gv{font-size:26px}
+  .last-upd { border-right: none; margin-right: 4px; padding-right: 4px; }
+  .off-breakdown{gap:4px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div><div style="margin-top:15px;color:var(--dim);font-size:12px;letter-spacing:1px">LOADING DATA...</div></div>
+
+<div class="dash" style="opacity:0; transition:opacity 0.5s" id="app">
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" style="width:clamp(20px,2.5vw,28px);height:auto;filter:drop-shadow(0 0 8px rgba(110,160,255,0.4))">
+        <defs><linearGradient id="lGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6ea0ff" /><stop offset="100%" stop-color="#4a7de0" /></linearGradient></defs>
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="url(#lGrad)" />
+      </svg>
+      <span>4G ROUTER</span>
+    </div>
+    <h1 id="h_title"> Online Dashboard <em>MEA | M2M</em></h1>
+  </div>
+  <div class="hdr-right">
+    
+    <div class="last-upd">
+      <div class="lu-title">LAST UPDATE</div>
+      <div class="lu-row">
+        <div class="lu-lbl scada">SCADA UPDATE</div>
+        <div class="lu-val" id="last_update_scada">--/--/---- --:--</div>
+      </div>
+      <div class="lu-row">
+        <div class="lu-lbl esight">NMS UPDATE</div>
+        <div class="lu-val" id="last_update_4g">--/--/---- --:--</div>
+      </div>
+    </div>
+
+    <div><div class="clock-t" id="ck">--:--:--</div><div class="clock-d" id="cd">--</div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="row1">
+    
+    <!-- ????????????????????? (Grand Summary) -->
+    <div class="grand">
+      <div class="grand-label">4G Router Summary</div>
+      <div class="g-num"><div class="gv c-inst" id="g_inst">0</div><div class="gl">????????????????</div></div>
+      <div class="g-sep"></div>
+      <div class="g-num">
+        <div class="gv c-onl"><span id="g_onl">0</span><span id="g_onl_trend"></span></div>
+        <div class="gl">Online NMS ???</div>
+      </div>
+      <div class="g-sep"></div>
+      <div class="g-num g-rate"><div class="gv" id="g_rate">0.0%</div><div class="gl">????? Online ???</div></div>
+    </div>
+
+    <!-- ???? NMS (4G NMS details) -->
+    <div class="tcard t442">
+      <div class="tc-top">
+        <div class="ttag tg4"><div class="dot" style="background:var(--t442)"></div>4G NMS Status</div>
+        <div class="tc-gauge">
+          <svg viewBox="0 0 120 65" style="width:clamp(70px,7vw,110px);height:auto">
+            <path d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7" stroke-linecap="round"/>
+            <path id="svg_442" d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="url(#g442)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" style="transition:stroke-dashoffset 1s ease"/>
+            <defs><linearGradient id="g442" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a7de0"/><stop offset="100%" stop-color="var(--c-online)"/></linearGradient></defs>
+            <text id="g4_rate_txt" x="60" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="800" fill="var(--c-online)">0%</text>
+            <text x="60" y="62" text-anchor="middle" font-family="Outfit" font-size="7" fill="var(--muted)">Online Rate</text>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-grid g4">
+        <div class="sbox">
+          <div class="sl">????? NMS</div>
+          <div class="sv c-inst" id="t4_inst">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-inst" style="width:100%"></div></div></div>
+        </div>
+        <div class="sbox">
+          <div class="sl">NMS Online</div>
+          <div class="sv c-onl"><span id="t4_onl">0</span><span id="t4_onl_trend"></span></div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-onl" id="b4_onl" style="width:0%"></div></div><div class="spct c-onl" id="p4_onl">0%</div></div>
+          <div class="arrow-label" id="lbl4_onl">? ?????????? 0</div>
+        </div>
+        <div class="sbox">
+          <div class="sl">NMS Offline</div>
+          <div class="sv c-offline" id="t4_e2e" style="color:var(--c-offline)">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-inst" id="b4_e2e" style="width:0%; background:var(--c-offline)"></div></div><div class="spct c-offline" id="p4_e2e" style="color:var(--c-offline)">0%</div></div>
+          <div class="arrow-label" id="lbl4_e2e">? ?????????? 0</div>
+        </div>
+        <div class="sbox">
+          <div class="sl">????? Online NMS</div>
+          <div class="sv c-sca" id="t4_sca">0%</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-sca" id="b4_sca" style="width:0%"></div></div><div class="spct c-sca" id="p4_sca">0%</div></div>
+          <div class="arrow-label" id="lbl4_sca">? ???????? 100%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ???? SCADA (SCADA details) -->
+    <div class="tcard thyb">
+      <div class="tc-top">
+        <div class="ttag tgh"><div class="dot" style="background:var(--thyb)"></div>SCADA Connection</div>
+        <div class="tc-gauge">
+          <svg viewBox="0 0 120 65" style="width:clamp(70px,7vw,110px);height:auto" overflow="visible">
+            <path d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7" stroke-linecap="round"/>
+            <path id="svg_hyb" d="M12,58 A48,48 0 0,1 108,58" fill="none" stroke="url(#gHyb)" stroke-width="7" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" style="transition:stroke-dashoffset 1s ease"/>
+            <defs><linearGradient id="gHyb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00bca8"/><stop offset="100%" stop-color="var(--c-online)"/></linearGradient></defs>
+            <text id="gh_rate_txt" x="60" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="16" font-weight="800" fill="var(--c-online)">0%</text>
+            <text x="60" y="62" text-anchor="middle" font-family="Outfit" font-size="7" fill="var(--muted)">SCADA Online</text>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-grid g4">
+        <div class="sbox">
+          <div class="sl">????? SCADA</div>
+          <div class="sv c-inst" id="th_inst">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-inst" style="width:100%"></div></div></div>
+        </div>
+        <div class="sbox">
+          <div class="sl">SCADA Online</div>
+          <div class="sv c-onl"><span id="th_onl">0</span><span id="th_onl_trend"></span></div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-onl" id="bh_onl" style="width:0%"></div></div><div class="spct c-onl" id="ph_onl">0%</div></div>
+          <div class="arrow-label" id="lblh_onl">? ??? E2E 0</div>
+        </div>
+        <div class="sbox">
+          <div class="sl">SCADA Failed</div>
+          <div class="sv c-offline" id="th_e2e" style="color:var(--c-offline)">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-inst" id="bh_e2e" style="width:0%; background:var(--c-offline)"></div></div><div class="spct c-offline" id="ph_e2e" style="color:var(--c-offline)">0%</div></div>
+          <div class="arrow-label" id="lblh_e2e">? ??? E2E 0</div>
+        </div>
+        <div class="sbox">
+          <div class="sl">SCADA Removed</div>
+          <div class="sv c-e2e" id="th_sca">0</div>
+          <div class="ssub"><div class="sbar"><div class="sfill f-e2e" id="bh_sca" style="width:0%"></div></div><div class="spct c-e2e" id="ph_sca">0%</div></div>
+          <div class="arrow-label" id="lblh_sca">? ??? E2E 0</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row2">
+    <div class="cpanel">
+      <div class="cp-hdr">
+        <div class="cp-t">4G NMS — ?????????????????????</div>
+        <div class="cp-badge" style="background:rgba(61,245,122,.1);color:var(--c-online)">NMS Online vs Offline</div>
+      </div>
+      <div class="chart-body" id="chart1"></div>
+      <div class="legend">
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-online)"></div>NMS Online</div>
+        <div class="leg-i"><div class="leg-sq" style="background:rgba(255,255,255,0.12)"></div>NMS Offline</div>
+      </div>
+    </div>
+
+    <div class="cpanel">
+      <div class="cp-hdr">
+        <div class="cp-t">4G Router — ??????????????????????????????????????</div>
+        <div class="cp-badge" style="background:rgba(110,160,255,0.1);color:var(--t442)">?????????? / ??????? NMS / NMS Online / SCADA Online</div>
+      </div>
+      <div class="chart-body" id="chart2"></div>
+      <div class="legend">
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-install)"></div>?????????????</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-online)"></div>????? NMS</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-e2e)"></div>NMS Online</div>
+        <div class="leg-i"><div class="leg-sq" style="background:var(--c-scada)"></div>SCADA Online</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const tt = document.createElement('div');
+tt.className = 'tooltip';
+document.body.appendChild(tt);
+
+window.showTT = function(e, label, val, color) {
+  tt.innerHTML = `${label}: <span class="tt-val" style="color:${color}">${val}</span>`;
+  tt.style.left = e.clientX + 'px';
+  tt.style.top = e.clientY + 'px';
+  tt.classList.add('show');
+};
+window.hideTT = function() {
+  tt.classList.remove('show');
+};
+window.moveTT = function(e) {
+  if(tt.classList.contains('show')) {
+    tt.style.left = e.clientX + 'px';
+    tt.style.top = e.clientY + 'px';
+  }
+};
+
+function tick(){
+  const n=new Date();
+  document.getElementById('ck').textContent=n.toLocaleTimeString('th-TH',{hour12:false});
+  document.getElementById('cd').textContent=n.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+tick(); setInterval(tick,1000);
+
+let refreshTimer;
+
+document.addEventListener("DOMContentLoaded", fetchSheetData);
+
+function fetchSheetData() {
+  google.script.run
+    .withSuccessHandler(renderDashboard)
+    .withFailureHandler(function(error) {
+      console.error(error);
+      document.getElementById('loader').innerHTML = `
+        <div style="color:#ff6b6b; text-align:center; background:#1a0f14; padding:20px; border:1px solid #ff6b6b; border-radius:10px;">
+          <h3 style="margin-bottom:10px;">????????????????????????????</h3>
+          <p style="font-size:12px;">${error.message}</p>
+        </div>`;
+    })
+    .getDashboardData();
+}
+
+const numF = (n) => Number(n).toLocaleString('en-US');
+const getTrend = (val) => {
+  val = Number(val);
+  if(!val) return '';
+  return val > 0 ? `<span class="trend up">? ${val}</span>` : `<span class="trend down">? ${Math.abs(val)}</span>`;
+};
+
+function formatDateTime(rawDateStr, rawTimeStr) {
+  let d_date = String(rawDateStr || '--');
+  let d_time = String(rawTimeStr || '--');
+  
+  d_date = d_date.includes(' ') ? d_date.split(' ')[0] : d_date;
+  d_time = d_time.includes(' ') ? d_time.split(' ').pop() : d_time;
+  
+  if (d_time.includes(':')) {
+    const t_parts = d_time.split(':');
+    if (t_parts.length >= 2) d_time = `${t_parts[0]}:${t_parts[1]}`;
+  }
+  return `${d_date} <span style="color:var(--text); font-weight:600">${d_time}</span>`;
+}
+
+function renderDashboard(data) {
+  const D = data.regions;
+  const conf = data.config;
+  const off = data.offline; 
+  
+  if(conf.dashboard_title) {
+    document.getElementById('h_title').innerHTML = `${conf.dashboard_title}<em>${conf.org_name || '???????????????'}</em>`;
+  }
+
+  // ??????????????????????
+  document.getElementById('last_update_scada').innerHTML = formatDateTime(conf.last_updated, conf.last_updated_time);
+  document.getElementById('last_update_4g').innerHTML = formatDateTime(conf.last_updated_eSight, conf.last_updated_time_eSight);
+  
+  let t_plan = 0;       // ?????????????
+  let t_nms_total = 0;  // ????? NMS
+  let t_nms_on = 0;     // NMS Online
+  let t_scada_total = 0;// ????? SCADA
+  let t_scada_on = 0;   // SCADA Online
+
+  // ???????????????
+  D.forEach(d => {
+    t_plan += d.i4 || 0;
+    t_nms_total += d.o4 || 0;
+    t_nms_on += d.e2e || 0;
+    t_scada_on += d.sc || 0;
+    t_scada_total += d.ih || 0;
+  });
+  
+  const rate_all = Number(conf.rate_all) || 0;
+  const rate_442 = Number(conf.rate_442) || 0; // NMS Online Rate
+  const rate_hyb = Number(conf.rate_hyb) || 0; // SCADA Online Rate
+
+  // 1. ??????????? (Grand Summary)
+  document.getElementById('g_inst').innerText = numF(t_plan); // ??????????
+  document.getElementById('g_onl').innerText = numF(t_nms_on); // Online NMS
+  document.getElementById('g_onl_trend').innerHTML = getTrend(conf.trend_online_all);
+  document.getElementById('g_rate').innerText = rate_all.toFixed(1) + '%';
+  
+  // 2. ???????????? 4G NMS (Left Details)
+  document.getElementById('svg_442').style.strokeDashoffset = 150.8 * (1 - (rate_442/100));
+  document.getElementById('g4_rate_txt').innerHTML = rate_442.toFixed(1) + '%';
+  document.getElementById('t4_inst').innerText = numF(t_nms_total);
+  document.getElementById('t4_onl').innerText = numF(t_nms_on);
+  document.getElementById('t4_onl_trend').innerHTML = getTrend(conf.trend_online_442);
+  document.getElementById('b4_onl').style.width = rate_442 + '%';
+  document.getElementById('p4_onl').innerText = rate_442.toFixed(1) + '%';
+  document.getElementById('lbl4_onl').innerText = `? ?????????? ${numF(t_nms_total)}`;
+  
+  const nms_offline = Math.max(0, t_nms_total - t_nms_on);
+  document.getElementById('t4_e2e').innerText = numF(nms_offline);
+  let p4_e2e = t_nms_total ? (nms_offline / t_nms_total * 100).toFixed(1) : 0;
+  document.getElementById('b4_e2e').style.width = p4_e2e + '%';
+  document.getElementById('p4_e2e').innerText = p4_e2e + '%';
+  document.getElementById('lbl4_e2e').innerText = `? ?????????? ${numF(t_nms_total)}`;
+  
+  document.getElementById('t4_sca').innerText = rate_442.toFixed(1) + '%';
+  document.getElementById('b4_sca').style.width = rate_442 + '%';
+  document.getElementById('p4_sca').innerText = rate_442.toFixed(1) + '%';
+  document.getElementById('lbl4_sca').innerText = `? ???????? 100%`;
+
+  // 3. ????? SCADA E2E (Right Details)
+  document.getElementById('svg_hyb').style.strokeDashoffset = 150.8 * (1 - (rate_hyb/100));
+  document.getElementById('gh_rate_txt').innerHTML = rate_hyb.toFixed(1) + '%';
+  
+  document.getElementById('th_inst').innerText = numF(t_scada_total);
+  document.getElementById('th_onl').innerText = numF(t_scada_on);
+  document.getElementById('th_onl_trend').innerHTML = getTrend(conf.trend_online_hybrid);
+  let ph_onl = t_scada_total ? (t_scada_on / t_scada_total * 100).toFixed(1) : 0;
+  document.getElementById('bh_onl').style.width = ph_onl + '%';
+  document.getElementById('ph_onl').innerText = ph_onl + '%';
+  document.getElementById('lblh_onl').innerText = `? ??? E2E ${numF(t_scada_total)}`;
+
+  // SCADA Failed
+  const scada_failed = off.find(o => o.name.indexOf("Failed") !== -1 || o.name.indexOf("FAILED") !== -1)?.valh || 0;
+  document.getElementById('th_e2e').innerText = numF(scada_failed);
+  let ph_e2e = t_scada_total ? (scada_failed / t_scada_total * 100).toFixed(1) : 0;
+  document.getElementById('bh_e2e').style.width = ph_e2e + '%';
+  document.getElementById('ph_e2e').innerText = ph_e2e + '%';
+  document.getElementById('lblh_e2e').innerText = `? ??? E2E ${numF(t_scada_total)}`;
+
+  // SCADA Removed
+  const scada_remove = off.find(o => o.name.indexOf("Remove") !== -1 || o.name.indexOf("REMOVE") !== -1)?.valh || 0;
+  document.getElementById('th_sca').innerText = numF(scada_remove);
+  let ph_sc = t_scada_total ? (scada_remove / t_scada_total * 100).toFixed(1) : 0;
+  document.getElementById('bh_sca').style.width = ph_sc + '%';
+  document.getElementById('ph_sca').innerText = ph_sc + '%';
+  document.getElementById('lblh_sca').innerText = `? ??? E2E ${numF(t_scada_total)}`;
+
+  // 5. ???????????????????????????
+  const sortedByAll = [...D].sort((a,b) => b.o4 - a.o4); // ????????????? NMS
+  const sortedByScada = [...D].sort((a,b) => b.sc - a.sc); // ???????? SCADA Online
+  
+  const c1 = document.getElementById('chart1'); c1.innerHTML = '';
+  const c2 = document.getElementById('chart2'); c2.innerHTML = '';
+  const mx = Math.max(...D.map(d => Math.max(d.i4, d.o4)), 1);
+
+  sortedByAll.forEach(d => {
+    const total = d.o4 || 0; // NMS Total
+    const online = d.e2e || 0; // NMS Online
+    const offline = Math.max(0, total - online); // NMS Offline
+    
+    const r1 = document.createElement('div'); r1.className = 'hrow';
+    r1.innerHTML = `
+      <div class="hrow-n">${d.name}</div>
+      <div class="hrow-track-wrapper">
+        <div class="hrow-track">
+          <div class="hrow-seg s-o4" style="width:${total ? (online/total*100).toFixed(1) : 0}%" onmouseenter="showTT(event, 'NMS Online', '${online}', 'var(--c-online)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"></div>
+          <div class="hrow-seg s-off" style="width:${total ? (offline/total*100).toFixed(1) : 0}%" onmouseenter="showTT(event, 'NMS Offline', '${offline}', 'rgba(255,255,255,0.12)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"></div>
+        </div>
+      </div>
+      <div class="hrow-v">${total}</div>`;
+    c1.appendChild(r1);
+  });
+
+  sortedByScada.forEach(d => {
+    const r2 = document.createElement('div'); r2.className = 'drow';
+    r2.innerHTML = `
+      <div class="drow-n">${d.name}</div>
+      <div class="drow-bars">
+        <div class="dbar-line" onmouseenter="showTT(event, '?????????????', ${d.i4}, 'var(--c-install)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-inst">?</div><div class="dbar-trk"><div class="dbar-fl f-inst" style="width:${mx ? (d.i4/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, '????? NMS', ${d.o4}, 'var(--c-online)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-onl">?</div><div class="dbar-trk"><div class="dbar-fl f-onl" style="width:${mx ? (d.o4/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'NMS Online', ${d.e2e}, 'var(--c-e2e)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-e2e">?</div><div class="dbar-trk"><div class="dbar-fl f-e2e" style="width:${mx ? (d.e2e/mx*100).toFixed(1) : 0}%"></div></div></div>
+        <div class="dbar-line" onmouseenter="showTT(event, 'SCADA Online', ${d.sc}, 'var(--c-scada)')" onmousemove="moveTT(event)" onmouseleave="hideTT()"><div class="dbar-ic c-sca">?</div><div class="dbar-trk"><div class="dbar-fl f-sca" style="width:${mx ? (d.sc/mx*100).toFixed(1) : 0}%"></div></div></div>
+      </div>`;
+    c2.appendChild(r2);
+  });
+
+  document.getElementById('loader').style.opacity = '0';
+  document.getElementById('app').style.opacity = '1';
+  setTimeout(()=> document.getElementById('loader').style.display = 'none', 500);
+
+  const intervalSeconds = Number(conf.refresh_interval);
+  if (intervalSeconds > 0 && !refreshTimer) {
+    refreshTimer = setInterval(() => {
+      google.script.run.withSuccessHandler(renderDashboard).getDashboardData();
+    }, intervalSeconds * 1000);
+  }
+}
+</script>
+</body>
+</html>

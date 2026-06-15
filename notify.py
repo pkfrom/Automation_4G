@@ -3,8 +3,10 @@ import logging
 import ssl
 import urllib.request
 import requests
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
+
+BANGKOK_TZ = timezone(timedelta(hours=7))
 
 from config import (
     TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
@@ -67,7 +69,7 @@ def _build_status_msg(title: str, online: int, offline: int,
     pct     = online  / total * 100 if total else 0
     bar     = "█" * int(pct / 100 * 12) + "░" * (12 - int(pct / 100 * 12))
     off_warn = " ⚠️" if offline > 0 else ""
-    ts = datetime.now()
+    ts = datetime.now(BANGKOK_TZ)
 
     lines = [
         f"📡 <b>{title}</b>",
@@ -104,5 +106,5 @@ def telegram_msg_error(stage: str, error: str) -> str:
         f"🚨 <b>Automation_4G ERROR</b>\n"
         f"⚠ ขั้นตอน: {stage}\n"
         f"❌ {error}\n"
-        f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        f"🕐 {datetime.now(BANGKOK_TZ).strftime('%Y-%m-%d %H:%M:%S')}"
     )

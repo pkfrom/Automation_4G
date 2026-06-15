@@ -3,9 +3,11 @@ import json
 import re
 import requests
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from bs4 import BeautifulSoup
+
+BANGKOK_TZ = timezone(timedelta(hours=7))
 
 from config import (
     NMS_URL, NMS_USER, NMS_PASS, GAS_UPLOAD_URL, NMS_EXPORT_DIR
@@ -77,8 +79,9 @@ class NMSClient:
         return {"online": 0, "offline": 0, "total": 0}
 
     def _export_post(self):
-        today     = datetime.now().strftime("%Y%m%d")
-        startdate = datetime.now().replace(day=1).strftime("%Y%m%d")
+        now_bkk   = datetime.now(BANGKOK_TZ)
+        today     = now_bkk.strftime("%Y%m%d")
+        startdate = now_bkk.replace(day=1).strftime("%Y%m%d")
         return self.s.post(
             NMS_BASE + "/Term/exportTerm.html",
             data={
@@ -188,7 +191,7 @@ def upload_to_gas_nms(data_2d: list, action: str = "importInterfaceBox") -> bool
 
 async def run_nms():
     log.info("=" * 45)
-    ts_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    ts_str = datetime.now(BANGKOK_TZ).strftime('%Y-%m-%d %H:%M:%S')
     log.info(f"🖥️  NMS เริ่มทำงาน: {ts_str}")
     NMS_REPORT_DIR.mkdir(exist_ok=True)
 
@@ -201,7 +204,7 @@ async def run_nms():
     counts = nms.get_online_count()
     telegram_send(telegram_msg_nms(counts))
 
-    ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts_str = datetime.now(BANGKOK_TZ).strftime("%Y%m%d_%H%M%S")
     hdrs, rows = nms.export_data()
 
     if hdrs and rows:
@@ -219,7 +222,7 @@ async def run_nms():
                 f"🔴 Offline: {counts['offline']:,}  "
                 f"📦 Total: {counts['total']:,}\n"
                 f"📊 Google Sheet อัพเดท {len(rows):,} แถว\n"
-                f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                f"🕐 {datetime.now(BANGKOK_TZ).strftime('%Y-%m-%d %H:%M:%S')}"
             )
         else:
             telegram_send(telegram_msg_error("NMS Upload GAS", "อัพโหลดไม่สำเร็จ"))
@@ -247,6 +250,11 @@ if __name__ == "__main__":
     import asyncio
     import sys
     
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+        
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", stream=sys.stdout)
     
     async def main():
