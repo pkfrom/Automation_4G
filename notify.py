@@ -93,7 +93,7 @@ def _build_status_msg(title: str, online: int, offline: int,
 
 def telegram_msg_nms(counts: dict) -> str:
     return _build_status_msg(
-        "NMS Interface Box Status Report",
+        "NMS 4G Status Report",
         counts.get("online", 0),
         counts.get("offline", 0),
         counts.get("total", 0),

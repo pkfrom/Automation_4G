@@ -214,7 +214,7 @@ async def run_nms():
         gas_ok = upload_to_gas_nms(data_2d)
         if gas_ok:
             telegram_send(
-                f"✅ <b>NMS Device Report อัพเดทแล้ว</b>\n"
+                f"✅ <b>NMS 4G Report อัพเดทแล้ว</b>\n"
                 f"🟢 Online: {counts['online']:,}  "
                 f"🔴 Offline: {counts['offline']:,}  "
                 f"📦 Total: {counts['total']:,}\n"
